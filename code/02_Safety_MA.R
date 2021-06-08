@@ -48,9 +48,6 @@ time_replace <- function(vector){
 }
 
 
-vacc <- 'AZ'
-event <- 'any_haem'
-
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
   
@@ -67,8 +64,10 @@ create_table_ma_plot <- function(vacc, event){
   table <- select(df, `Time period`, country, N, R) %>% arrange(`Time period`, country) %>% 
     pivot_wider(id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
     select(1, 2, 5, 3, 6, 4, 7)
+  
+  table[is.na(table)] <- 0
 
-  table[, 2:ncol(table)][table[, 2:ncol(table)] < 5 ] <- '<5'
+  table[, 2:ncol(table)][ table[, 2:ncol(table)] < 5 & table[, 2:ncol(table)] > 0 ] <- '<5'
   
   table <- table[match(times, pull(table, 'Time period')),]
   
@@ -83,7 +82,7 @@ create_table_ma_plot <- function(vacc, event){
                   backtransf=TRUE, sm="OR", comb.fixed=TRUE, bylab = 'Time period')
   
   TE <- ma$TE
-  TE[exp(TE) > 1.3] <- NA
+  TE[exp(TE) > 1000] <- NA
   ma$TE <- TE
   
   limits <- setNA(ma[['upper']], ma[['lower']])
@@ -109,8 +108,8 @@ create_pub_table <- function(){
     }
   }
   
-  names(AZ_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ')
-  names(PB_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ')
+  names(AZ_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
+  names(PB_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   
   new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 3))
   
