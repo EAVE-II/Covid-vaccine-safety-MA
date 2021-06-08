@@ -72,6 +72,9 @@ create_table_ma_plot <- function(vacc, event){
   
   table <- table[match(times, pull(table, 'Time period')),]
   
+  # Format numbers with commas per three decimal places
+  table <- mutate_if(table, is.numeric, ~formatC(round(.), format = "f", big.mark = ",", drop0trailing = TRUE) )
+  
   new_row <- c(endpoints[[event]], rep('', 8))
   
   table <- rbind(new_row, table)
