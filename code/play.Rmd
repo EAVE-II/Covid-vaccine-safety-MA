@@ -1,0 +1,99 @@
+---
+title: "Safety Meta Analysis - Case Control Studies"
+author: "Chris Robertson"
+date: "29/04/2021"
+output: 
+  html_document: 
+    fig_crop: no
+#    fig_height: 9
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(meta)
+
+Location <- "/conf/"  # Server
+#Location <- "//isdsf00d03/"  # Desktop
+
+#Read in the cohrt from 01a_Vaccination_Input.R in Vaccine folder
+project_path <- paste0(Location,"EAVE/GPanalysis/progs/CR/Safety_Meta_Analysis")
+
+
+endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", 
+                     "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
+endpoint_groups <- c("throm_cvst", "any_throm", "any_haem", "any_itp", "itp_gen",  "itp")
+
+subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {g}
+  ), collapse = '')
+
+  sub_chunk <- paste0("
+  `","``{r sub_chunk_", floor(runif(1) * 10000), ", fig.height=", fig_height, ", fig.width=", fig_width, ", echo=FALSE}",
+  "\n(", 
+    g_deparsed
+    , ")()",
+  "\n`","``
+  ")
+
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+```
+
+
+
+## Analysis methods
+
+A generic inverse variance method for meta-analysis is used. Statistical heterogeneity of our pooled vaccine safety estimates will be evaluated using the standard x2 and the I2 statistic. Effect estimates from fixed-effect models will only be considered since the same study designs will be carried out in each UK nation. Individual nation’s Risk Ratios (RRs) or Odd Ratios (ORs) and their 95% CIs will be used to estimate the pooled vaccine safety estimates.
+
+The meta-analysis will be based upon the log (RR) and its SE, or the log (OR) and its SE for the SCCS and case control respectively. If, necessary, the SE will be derived from the 95% confidence intervals 
+
+Forest plots will be used to visualise any statistical heterogeneity in our pooled estimates across all UK nations.
+
+All statistical tests are two sided and with a 5% significance level. All analyses will be carried out using R/RStudio. The meta package has been used for the analysis and the metagen function.
+
+## Results
+
+
+```{r table_1, , results='asis', include=TRUE, warning=FALSE, echo=FALSE}
+
+#{r table_1, results='asis', include=TRUE, warning=FALSE, echo=FALSE, fig.align = "center", fig.width = 8, out.width = "8.5in"}
+#options(knitr.kable.NA = '', fig.height = 12) 
+
+knitr::opts_chunk$set(fig.height=12) 
+
+i <- 1
+  
+
+  z_fname <- paste0("output/ma_res_",endpoint_groups[i],".RDS")
+  output_list <- readRDS(paste0(project_path,"/",z_fname))
+
+
+cat("\n## ",output_list$Endpoint, " \n") 
+
+cat("\n### AstraZeneca \n") 
+
+$\vspace{-5truemm}$
+
+
+forest(output_list$az_0_27, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+       label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)")
+
+cat("\n\n\n")
+
+
+
+
+cat('<br><br><br>')
+
+forest(output_list$az, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+       label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)")
+
+
+
+```
