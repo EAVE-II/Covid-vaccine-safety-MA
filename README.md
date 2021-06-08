@@ -1,6 +1,5 @@
 # EAVE II Analysis Repository
-## Meta-analysis of first dose ChAdOx1 and BNT162b2 COVID-19 vaccinations and thrombocytopenic, venous thromboembolic
-##        and haemorrhagic events in the UK
+## Meta-analysis of first dose ChAdOx1 and BNT162b2 COVID-19 vaccinations and thrombocytopenic, venous thromboembolic and haemorrhagic events in the UK
 
 ### Paper Details
 > **Short title:** Vaccine safety meta-analysis
