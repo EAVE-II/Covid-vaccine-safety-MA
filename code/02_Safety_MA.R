@@ -121,7 +121,6 @@ create_pub_table <- function(){
   write.csv(PB_table, paste(path, 'PB_table.csv', sep='' ), row.names = FALSE) 
 }
 
-
 ###############################################################################
 
 # Named vector of endpoints
