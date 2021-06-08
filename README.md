@@ -1,12 +1,13 @@
 # EAVE II Analysis Repository
-## [Insert full title here]  
+## Meta-analysis of first dose ChAdOx1 and BNT162b2 COVID-19 vaccinations and thrombocytopenic, venous thromboembolic
+##        and haemorrhagic events in the UK
 
 ### Paper Details
-> **Short title:** [Insert short title of paper here]
+> **Short title:** Vaccine safety meta-analysis
 >
 >**DOI:** [Insert DOI of paper here]
 >
->**Paper authors:** [Insert the top 6 authors of paper (followed by ‘et al’ if more) here]
+>**Paper authors:** Chris Robertson, Steven Kerr, Eleftheria Vasieliou, Ting Shi
 >
 >**Data source:** [Insert link to data source (if publicly available) here]
 
