@@ -48,6 +48,9 @@ time_replace <- function(vector){
 }
 
 
+vacc <- 'AZ'
+event <- 'any_haem'
+
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
   
@@ -65,10 +68,7 @@ create_table_ma_plot <- function(vacc, event){
     pivot_wider(id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
     select(1, 2, 5, 3, 6, 4, 7)
 
-  table$N <- rowSums(select(table, starts_with("N")))
-  table$R <- rowSums(select(table, starts_with("N")))
-  
-  table[, 2:9][table[, 2:9] < 5 ] <- '< 5'
+  table[, 2:ncol(table)][table[, 2:ncol(table)] < 5 ] <- '<5'
   
   table <- table[match(times, pull(table, 'Time period')),]
   
@@ -109,10 +109,10 @@ create_pub_table <- function(){
     }
   }
   
-  names(AZ_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ', 'Total', ' ')
-  names(PB_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ', 'Total', ' ')
+  names(AZ_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ')
+  names(PB_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ')
   
-  new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 4))
+  new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 3))
   
   AZ_table <- rbind(new_row, AZ_table)
   PB_table <- rbind(new_row, PB_table)
