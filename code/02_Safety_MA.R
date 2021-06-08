@@ -47,6 +47,7 @@ time_replace <- function(vector){
                             "v1_28" = 'Day 28'))
 }
 
+
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
   
@@ -121,10 +122,10 @@ create_pub_table <- function(){
 
 # Named vector of endpoints
 endpoints <- c( "any_haem" =  "Haemorrhage, excluding GI, GU",
-                "any_itp" = "Thrombocytopenia - ITP - General and Specific",
-                "any_throm" = "Thrombosis excluding CVT, SVT",
                 "itp" = "ITP - Specific",
                 "itp_gen" = "Thrombocytopenia - ITP - General",
+                "any_itp" = "Thrombocytopenia - ITP - General and Specific",
+                "any_throm" = "Thrombosis excluding CVT, SVT",
                 "throm_cvst" = "Thrombosis including CVT, SVT" )
 
 path <- '/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA/output/'
