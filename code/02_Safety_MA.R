@@ -1,10 +1,13 @@
 ######################################################################
 ## Title: Meta-analysis of first dose ChAdOx1 and BNT162b2 COVID-19 vaccinations and thrombocytopenic, venous thromboembolic
-#         and haemorrhagic events in the UK
+##        and haemorrhagic events in the UK
+##
 ## Short title: Vaccine safety meta-analysis
+##
 ## Code author: Chris Robertson, Steven Kerr
+##
 ## Description: This does the meta analysis using estimated odds ratios for adverse events
-#               following vaccination from each country
+##              following vaccination from each country
 ######################################################################
 
 library(readxl)
@@ -13,7 +16,7 @@ library(tidyverse)
 library(meta)
 library(stringr)
 
-source('/conf/EAVE/GPanalysis/progs/SRK/Safety_meta_analysis/progs/01_MA_Input.R')
+source('./code/01_MA_Input.R')
 
 ####################### FUNCTIONS #############################################
 
@@ -53,7 +56,9 @@ create_table_ma_plot <- function(vacc, event){
   
   times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27", "Day 0-27","Day 28+") 
   
-  df <- filter(df, `Time period` %in% times & vaccine==vacc & group == event) 
+  df <- filter(df, `Time period` %in% times & vaccine==vacc & group == event)
+  
+  df <- df[order(df$country),]
   
   table <- select(df, `Time period`, country, N, R) %>% arrange(`Time period`, country) %>% 
     pivot_wider(id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
@@ -62,7 +67,7 @@ create_table_ma_plot <- function(vacc, event){
   table$N <- rowSums(select(table, starts_with("N")))
   table$R <- rowSums(select(table, starts_with("N")))
   
-  table[, 2:9][table[, 2:9] <= 5 ] <- '<= 5'
+  table[, 2:9][table[, 2:9] < 5 ] <- '< 5'
   
   table <- table[match(times, pull(table, 'Time period')),]
   
@@ -72,6 +77,10 @@ create_table_ma_plot <- function(vacc, event){
   
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
                   backtransf=TRUE, sm="OR", comb.fixed=TRUE, bylab = 'Time period')
+  
+  TE <- ma$TE
+  TE[exp(TE) > 1.3] <- NA
+  ma$TE <- TE
   
   limits <- setNA(ma[['upper']], ma[['lower']])
   
@@ -85,21 +94,21 @@ create_table_ma_plot <- function(vacc, event){
 create_pub_table <- function(){
   for (i in 1:length(endpoints)) { 
     
-    input <- readRDS(paste0("output/ma_res_",names(endpoints)[i],".RDS") )
+    input <- readRDS(paste0("./output/ma_res_", names(endpoints)[i],".rds") )
     
     if (i == 1){
       AZ_table <- input$az_tab
-      PB_table <- input$az_tab
+      PB_table <- input$pb_tab
     } else {
       AZ_table <- rbind(AZ_table, input$az_tab)
-      PB_table <- rbind(PB_table, input$az_tab)
+      PB_table <- rbind(PB_table, input$pb_tab)
     }
   }
   
   names(AZ_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ', 'Total', ' ')
   names(PB_table) <- c(' ', 'England - RGCP', ' ', 'Scotland', ' ', 'Wales', ' ', 'Total', ' ')
   
-  new_row <- c('Time period', rep( c('Number vaccinated', 'Number of events'), 4))
+  new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 4))
   
   AZ_table <- rbind(new_row, AZ_table)
   PB_table <- rbind(new_row, PB_table)
@@ -118,7 +127,7 @@ endpoints <- c( "any_haem" =  "Haemorrhage, excluding GI, GU",
                 "itp_gen" = "Thrombocytopenia - ITP - General",
                 "throm_cvst" = "Thrombosis including CVT, SVT" )
 
-path <- '/conf/EAVE/GPanalysis/progs/SRK/Safety_meta_analysis/output/'
+path <- '/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA/output/'
 
 ############################################################################
 
@@ -158,8 +167,8 @@ for (i in 1:length(endpoints) ) {
   
   dev.off()
 
-saveRDS(output_list,paste0("output/ma_res_",output_list$group,".RDS"))
+saveRDS(output_list,paste0("./output/ma_res_" , output_list$group, ".rds"))
 }
 
 
-#create_pub_table()
+create_pub_table()

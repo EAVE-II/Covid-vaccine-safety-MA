@@ -17,11 +17,10 @@ Location <- "/conf/"  # Server
 #Location <- "//isdsf00d03/"  # Desktop
 
 #Read in the cohrt from 01a_Vaccination_Input.R in Vaccine folder
-project_path <- paste0(Location,"EAVE/GPanalysis/progs/SRK/Safety_meta_analysis")
+project_path <- paste0(Location,"EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA")
 
 
-endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", 
-                     "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
+endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
 endpoint_groups <- c("throm_cvst", "any_throm", "any_haem", "any_itp", "itp_gen",  "itp")
 
 # This sets upper and lower confidence interval entries for treatment effects
@@ -63,7 +62,7 @@ for (i in 1:(length(endpoint_groups))) {
   
 #i <- 1
 
-z_fname <- paste0("output/ma_res_",endpoint_groups[i],".RDS")
+z_fname <- paste0("output/ma_res_",endpoint_groups[i],".rds")
 output_list <- readRDS(paste0(project_path,"/",z_fname))
 
 
@@ -98,7 +97,7 @@ z.ma[['upper']] <- limits[[1]]
 z.ma[['lower']] <- limits[[2]]
 
 
-forest(z.ma, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), label.right = "Higher       Risk", label.left="Lower Risk", main="log(OR)")
+forest(z.ma, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)")
 
 
 cat('\n\n\n')
