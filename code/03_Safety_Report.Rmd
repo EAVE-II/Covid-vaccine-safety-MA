@@ -21,14 +21,12 @@ project_path <- paste0(Location,"EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-
 
 
 
-# Named vector of endpoints
 endpoints <- c( "any_haem" =  "Haemorrhagic events",
                 "itp" = "Idiopathic Thrombocytopenic Purpura",
-                "itp_gen" = "Thrombocytopenia - ITP - General",
+                "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "any_itp" = "Thrombocytopenia - ITP - General and Specific",
                 "any_throm" = "Thrombosis excluding CVT, SVT",
                 "throm_cvst" = "Venous thromboembolic events" )
-
 
 # endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
 # endpoint_groups <- c("throm_cvst", "any_throm", "any_haem", "any_itp", "itp_gen",  "itp")

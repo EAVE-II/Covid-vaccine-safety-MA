@@ -125,7 +125,7 @@ create_pub_table <- function(){
 # Named vector of endpoints
 endpoints <- c( "any_haem" =  "Haemorrhagic events",
                 "itp" = "Idiopathic Thrombocytopenic Purpura",
-                "itp_gen" = "Thrombocytopenia - ITP - General",
+                "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "any_itp" = "Thrombocytopenia - ITP - General and Specific",
                 "any_throm" = "Thrombosis excluding CVT, SVT",
                 "throm_cvst" = "Venous thromboembolic events" )
