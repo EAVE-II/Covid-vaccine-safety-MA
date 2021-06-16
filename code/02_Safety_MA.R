@@ -32,11 +32,6 @@ setNA <- function(upper, lower){
   return(list(upper, lower))
 }
 
-# Insert a new_row in df at index
-insert_row <- function(df, index, new_row){
- rbind( df[1:index,], new_row, df[(index+1):nrow(df), ])
-}
-
 # Replace time entries with something more readable.
 time_replace <- function(vector){
   str_replace_all(vector, c("v1_0:6" = 'Day 0-6', 
@@ -47,6 +42,9 @@ time_replace <- function(vector){
                             "v1_28" = 'Day 28'))
 }
 
+
+vacc <- 'AZ'
+event <- 'itp'
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -95,7 +93,9 @@ create_table_ma_plot <- function(vacc, event){
 
 # Combine individual tables into one for publication
 create_pub_table <- function(){
-  for (i in 1:length(endpoints)) { 
+  for (i in c(1,2,4,6)) { 
+    
+    #i <- 1
     
     input <- readRDS(paste0("./output/ma_res_", names(endpoints)[i],".rds") )
     
@@ -123,14 +123,14 @@ create_pub_table <- function(){
 ###############################################################################
 
 # Named vector of endpoints
-endpoints <- c( "any_haem" =  "Haemorrhage, excluding GI, GU",
-                "itp" = "ITP - Specific",
+endpoints <- c( "any_haem" =  "Haemorrhagic events",
+                "itp" = "Idiopathic Thrombocytopenic Purpura",
                 "itp_gen" = "Thrombocytopenia - ITP - General",
                 "any_itp" = "Thrombocytopenia - ITP - General and Specific",
                 "any_throm" = "Thrombosis excluding CVT, SVT",
-                "throm_cvst" = "Thrombosis including CVT, SVT" )
+                "throm_cvst" = "Venous thromboembolic events" )
 
-path <- '/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA/output/'
+path <- './output/'
 
 ############################################################################
 

@@ -20,8 +20,18 @@ Location <- "/conf/"  # Server
 project_path <- paste0(Location,"EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA")
 
 
-endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
-endpoint_groups <- c("throm_cvst", "any_throm", "any_haem", "any_itp", "itp_gen",  "itp")
+
+# Named vector of endpoints
+endpoints <- c( "any_haem" =  "Haemorrhagic events",
+                "itp" = "Idiopathic Thrombocytopenic Purpura",
+                "itp_gen" = "Thrombocytopenia - ITP - General",
+                "any_itp" = "Thrombocytopenia - ITP - General and Specific",
+                "any_throm" = "Thrombosis excluding CVT, SVT",
+                "throm_cvst" = "Venous thromboembolic events" )
+
+
+# endpoint_titles <- c("Thrombosis inc CVT SVT", "Thrombosis excl CVT SVT", "Haemorrhage, excluding GI, GU", "Thrombocytopenia - ITP - General and Specific", "Thrombocytopenia - ITP - General",  "ITP - Specific")
+# endpoint_groups <- c("throm_cvst", "any_throm", "any_haem", "any_itp", "itp_gen",  "itp")
 
 # This sets upper and lower confidence interval entries for treatment effects
 # to NA if either of their exponential is infinite.
@@ -57,12 +67,12 @@ All statistical tests are two sided and with a 5% significance level. All analys
 #options(knitr.kable.NA = '', fig.height=12)
 
 
-for (i in 1:(length(endpoint_groups))) {
+for (i in 1:(length(endpoints))) {
 
   
-i <- 1
+#i <- 1
 
-z_fname <- paste0("output/ma_res_",endpoint_groups[i],".rds")
+z_fname <- paste0("output/ma_res_",names(endpoints)[i],".rds")
 output_list <- readRDS(paste0(project_path,"/",z_fname))
 
 

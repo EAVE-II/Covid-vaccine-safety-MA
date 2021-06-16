@@ -15,6 +15,9 @@ library(plyr)
 library(tidyverse)
 library(meta)
 
+# Set working directory on PHS for SRK
+setwd('/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA')
+
 ############################ FUNCTIONS ###############################
 
 # This calculates odds ratios for 0-27 days for the English data taking a weighted average
@@ -28,34 +31,71 @@ fun_calc_0_27 <- function(df){
   df
 }
 
-######################################################################
+# Convert cols to numeric type
+convert_to_numeric <- function(df, cols){
+  for (col in cols){
+    df[ ,col] <- as.numeric(pull(df,col))
+  }
+  return(df)
+}
 
-# Read in scotland data
+file <- 'DaCVapVaccineSafety_Sensitivity_Analysis_200210221.xlsx'
+# This reads in English data, taking weighted average of RRs for day 0-27
+# file is the name of the file in data folder
+read_eng <- function(file){
+  group_names <- c("throm_cvst","any_throm","any_haem","any_itp","itp_gen","itp")
+  
+  for (i in 1:6) { 
+    #i <- 6
+    z_in <- read_xlsx( paste0("./data/", file) , sheet=i)
+    
+    cols <- names(z_in)[4:length(z_in)]
+    z_in <- convert_to_numeric(z_in, cols)
+    
+    names(z_in) <- c(names(z_in)[1:5],"RR","LCL","UCL", "log_rr","se_log_rr")
+    df <- filter(z_in, Status %in% paste0("AstraZeneca_v1_", c("0:6","7:13","14:20","21:27")))
+    
+    df <- fun_calc_0_27(df)
+    df_az <- bind_cols(data.frame(Endpoint=unique(z_in$Endpoint), Country="England (RGCP)", Status = "AstraZeneca_v1_0:27"), df)
+    df <- filter(z_in, Status %in% paste0("Pfizer_v1_", c("0:6","7:13","14:20","21:27")))
+    
+    # cols <- names(df)[4:length(df)]
+    # df <- convert_to_numeric(df, cols)
+    
+    df <- fun_calc_0_27(df)
+    df_pb <- bind_cols(data.frame(Endpoint=unique(z_in$Endpoint), Country="England (RGCP)", Status = "Pfizer_v1_0:27"), df)
+    z_in <- bind_rows(z_in, df_az, df_pb)
+    z_in$group <- group_names[i]
+    if (exists("z")) z <- bind_rows(z, z_in) else z <- z_in
+  }
+  return(z)
+}
+
+##################### IMPORT DATA ##################################
+
+# Scottish data
+# Main analysis
 scot <- read.csv("./data/scotland_ma_results.csv")
+# Sensitivity analysis
+#scot <- read_excel("./data/Feb_21_sensitivity.xlsx")
+
+# English data
+# Main analysis
+eng <- read_eng('DaCVaPVaccineSafetyforCR.xlsx')
+# Sensitivity analysis
+#eng <- read_eng('DaCVapVaccineSafety_Sensitivity_Analysis_200210221.xlsx')
+
+# Welsh data
+wales <- read_csv("./data/Meta-Analysis_Wales_Coeficients.csv")
+
+####################### PREPARE DATA ###################################
+
 scot <- scot %>%  dplyr::rename(RR=HR, Status=vs_type) %>% 
   mutate(log_rr = log(RR), log_lcl = log(LCL), log_ucl = log(UCL)) %>% 
   mutate(se_log_rr = (log_ucl - log_lcl)/4)
 
 
-# Read English data
-ew_group_names <- c("throm_cvst","any_throm","any_haem","any_itp","itp_gen","itp")
-rm(z)
-for (i in 1:6) { 
-#i <- 1
-z_in <- read_xlsx("./data/DaCVaPVaccineSafetyforCR.xlsx", sheet=i)
-names(z_in) <- c(names(z_in)[1:5],"RR","LCL","UCL", "log_rr","se_log_rr")
-df <- filter(z_in, Status %in% paste0("AstraZeneca_v1_", c("0:6","7:13","14:20","21:27")))
-df <- fun_calc_0_27(df)
-df_az <- bind_cols(data.frame(Endpoint=unique(z_in$Endpoint), Country="England (RGCP)", Status = "AstraZeneca_v1_0:27"), df)
-df <- filter(z_in, Status %in% paste0("Pfizer_v1_", c("0:6","7:13","14:20","21:27")))
-df <- fun_calc_0_27(df)
-df_pb <- bind_cols(data.frame(Endpoint=unique(z_in$Endpoint), Country="England (RGCP)", Status = "Pfizer_v1_0:27"), df)
-z_in <- bind_rows(z_in, df_az, df_pb)
-z_in$group <- ew_group_names[i]
-if (exists("z")) z <- bind_rows(z, z_in) else z <- z_in
-}
-
-eng <- z %>% dplyr::relocate(group, .after=Endpoint) %>% dplyr::relocate(se_log_rr, .after=last_col())
+eng <- eng %>% dplyr::relocate(group, .after=Endpoint) %>% dplyr::relocate(se_log_rr, .after=last_col())
 
 eng <- eng %>% mutate(Status = gsub("AstraZeneca", "AZ",Status)) %>% 
   mutate(Status = gsub("Pfizer", "PB",Status))
@@ -64,8 +104,7 @@ eng <- eng %>% dplyr::rename(country = Country)
 eng$country <- 'England - RCGP'
 
 
-# Read Welsh data
-wales <- read_csv("./data/Meta-Analysis_Wales_Coeficients.csv")
+
 wales <- wales %>% filter(model_type %in% c("fully_adjusted", "reference")) %>% dplyr::select(-p_event, -statistic, -p.value)
 names(wales) <- c("Endpoint","model_type","Status","N","R","log_rr","se_log_rr","RR","LCL","UCL")
 wales <- wales %>% dplyr::select(-model_type)
@@ -84,7 +123,7 @@ wales <- wales %>%  mutate(country = "Wales") %>%
 
 wales <- filter(wales, !is.na(RR))
 
-# Combine data into one data frame, and do some renaming
+######################## COMBINE DATA ################################
 df <- bind_rows(dplyr::select(eng, -log_lcl, -log_ucl),
                 dplyr::select(scot, -log_lcl, -log_ucl) ,wales)
 df <- df %>% mutate(Status = factor(Status, levels =
