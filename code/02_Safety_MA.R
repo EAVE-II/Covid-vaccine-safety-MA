@@ -42,10 +42,6 @@ time_replace <- function(vector){
                             "v1_28" = 'Day 28'))
 }
 
-
-vacc <- 'AZ'
-event <- 'itp'
-
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
   
@@ -61,7 +57,7 @@ create_table_ma_plot <- function(vacc, event){
   
   table <- select(df, `Time period`, country, N, R) %>% arrange(`Time period`, country) %>% 
     pivot_wider(id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
-    select(1, 2, 5, 3, 6, 4, 7)
+    select(1, 5, 2, 6, 3, 7, 4)
   
   table[is.na(table)] <- 0
 
@@ -93,11 +89,10 @@ create_table_ma_plot <- function(vacc, event){
 
 # Combine individual tables into one for publication
 create_pub_table <- function(){
-  for (i in c(1,2,4,6)) { 
-    
-    #i <- 1
-    
-    input <- readRDS(paste0("./output/ma_res_", names(endpoints)[i],".rds") )
+  for (i in 1:length(endpoints)) { 
+    #i <- 2
+
+    input <- readRDS(paste0(path, 'ma_res_', names(endpoints)[i],".rds") )
     
     if (i == 1){
       AZ_table <- input$az_tab
@@ -111,7 +106,7 @@ create_pub_table <- function(){
   names(AZ_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   names(PB_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   
-  new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 3))
+  new_row <- c('Time period', rep( c('Number of cases', 'Number of controls'), 3))
   
   AZ_table <- rbind(new_row, AZ_table)
   PB_table <- rbind(new_row, PB_table)
@@ -123,22 +118,25 @@ create_pub_table <- function(){
 ###############################################################################
 
 # Named vector of endpoints
-endpoints <- c( "any_haem" =  "Haemorrhagic events",
+endpoints <- c( "Arterial_thromb" = "Arterial Thrombosis",
+                "any_haem" =  "Haemorrhagic events",
                 "itp" = "Idiopathic Thrombocytopenic Purpura",
                 "itp_gen" = "Thrombocytopenic events (excluding ITP)",
-                "any_itp" = "Thrombocytopenia - ITP - General and Specific",
-                "any_throm" = "Thrombosis excluding CVT, SVT",
                 "throm_cvst" = "Venous thromboembolic events" )
 
-path <- './output/'
+# Change this depending on whether main analysis, sensitivty analysis etc
+#study <- 'SCCS'
+#study <- 'case-control-sensitivity'
+study <- 'case-control'
+
+path <- paste0('./output/', study, '/')
 
 ############################################################################
 
 # Create figures output lists etc in a loop
 for (i in 1:length(endpoints) ) { 
-
   output_list <- list()
-  #i <- 1
+  #i <- 5
   
   output_list$Endpoint = endpoints[[i]]
   output_list$group = names(endpoints)[i]
@@ -169,8 +167,10 @@ for (i in 1:length(endpoints) ) {
          colgap=unit(4, "cm"))
   
   dev.off()
+  
+ 
 
-saveRDS(output_list,paste0("./output/ma_res_" , output_list$group, ".rds"))
+saveRDS(output_list,paste0(path, "/ma_res_" , output_list$group, ".rds"))
 }
 
 
