@@ -32,6 +32,18 @@ setNA <- function(upper, lower){
   return(list(upper, lower))
 }
 
+# This sets upper and lower confidence interval entries for treatment effects
+# to 0 if either of their exponentials is infinite.
+set0 <- function(upper, lower){
+  
+  indices <- is.infinite(exp(upper)) | is.infinite(exp(lower))
+  
+  upper[indices] <- 0
+  lower[indices] <- 0
+  
+  return(list(upper, lower))
+}
+
 # Replace time entries with something more readable.
 time_replace <- function(vector){
   str_replace_all(vector, c("v1_0:6" = 'Day 0-6', 
@@ -41,6 +53,10 @@ time_replace <- function(vector){
                             "v1_0:27" = 'Day 0-27',
                             "v1_28" = 'Day 28'))
 }
+
+# Test
+# vacc <- 'AZ'
+#event <- 'itp'
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -74,15 +90,27 @@ create_table_ma_plot <- function(vacc, event){
   
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
                   backtransf=TRUE, sm="OR", comb.fixed=TRUE, bylab = 'Time period')
-  
+
   TE <- ma$TE
   TE[exp(TE) > 1000] <- NA
   ma$TE <- TE
-  
+
+  # Upper and lower limits for confidence intervals have to be set strategically in order to not get an 
+  # error from forest(), but also to create a forest plot that isnt nonsensical.
   limits <- setNA(ma[['upper']], ma[['lower']])
-  
+
   ma[['upper']] <- limits[[1]]
   ma[['lower']] <- limits[[2]]
+
+  limits <- set0(ma[['upper.fixed']], ma[['lower.fixed']])
+
+  ma[['upper.fixed']] <- limits[[1]]
+  ma[['lower.fixed']] <- limits[[2]]
+
+  limits <- set0(ma[['upper.fixed.w']], ma[['lower.fixed.w']])
+
+  ma[['upper.fixed.w']] <- limits[[1]]
+  ma[['lower.fixed.w']] <- limits[[2]]
 
   return(list(table, ma))
 }
@@ -136,7 +164,13 @@ path <- paste0('./output/', study, '/')
 # Create figures output lists etc in a loop
 for (i in 1:length(endpoints) ) { 
   output_list <- list()
-  #i <- 5
+  i <- 3
+  
+  if(i==3){
+    i <- 4
+  }
+  
+  print(i)
   
   output_list$Endpoint = endpoints[[i]]
   output_list$group = names(endpoints)[i]
@@ -146,7 +180,7 @@ for (i in 1:length(endpoints) ) {
   output_list$az_tab <- analysis_objects[[1]]
   output_list$az <- analysis_objects[[2]]
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 900, height = 750)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1200, height = 750)
 
   forest(output_list$az, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
