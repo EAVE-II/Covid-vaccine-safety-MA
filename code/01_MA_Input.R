@@ -71,8 +71,6 @@ read_eng_avg <- function(file){
   return(z)
 }
 
-file <- 'RCGP-UPDATED-DACVAP-SAFETY.xlsx'
-
 # This reads in English data, with no weighting as in read_eng_avg
 # file is the name of the file in data folder
 read_eng <- function(file){
@@ -100,20 +98,20 @@ read_eng <- function(file){
 
 # Scottish data
 # Main analysis
-scot <- read.csv("./data/scotland_ma_results.csv")
+#scot <- read.csv("./data/scotland_ma_results.csv")
 # Sensitivity analysis
-#scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
+scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
 
 # English data
 # Main analysis
-eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
+#eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
 # Sensitivity analysis
-#eng <- read_eng_avg('DaCVapVaccineSafety_Sensitivity_Analysis_200210221.xlsx')
+eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
 
 # Welsh data
-wales <- read_csv("./data/t_n_coef_all_long.csv")
+#wales <- read_csv("./data/t_n_coef_all_long.csv")
 # Sensitivty analysis
-#wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
+wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
 
 ####################### PREPARE DATA ###################################
 
@@ -121,8 +119,7 @@ scot <- scot %>%  dplyr::rename(RR=HR) %>%
   mutate(log_rr = log(RR), log_lcl = log(LCL), log_ucl = log(UCL)) %>% 
   mutate(se_log_rr = (log_ucl - log_lcl)/4)
 
-eng <- rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country,
-              Status = status))
+eng <- rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country))
 
 eng <- eng %>% dplyr::relocate(group, .after=Endpoint) %>% dplyr::relocate(se_log_rr, .after=last_col())
 

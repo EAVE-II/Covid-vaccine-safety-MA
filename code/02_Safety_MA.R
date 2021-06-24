@@ -126,8 +126,8 @@ endpoints <- c( "Arterial_thromb" = "Arterial Thrombosis",
 
 # Change this depending on whether main analysis, sensitivty analysis etc
 #study <- 'SCCS'
-#study <- 'case-control-sensitivity'
-study <- 'case-control'
+study <- 'case-control-sensitivity'
+#study <- 'case-control'
 
 path <- paste0('./output/', study, '/')
 
