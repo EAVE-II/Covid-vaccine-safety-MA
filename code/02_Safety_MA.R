@@ -146,16 +146,16 @@ create_pub_table <- function(){
 ###############################################################################
 
 # Named vector of endpoints
-endpoints <- c( "Arterial_thromb" = "Arterial Thrombosis",
+endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "any_haem" =  "Haemorrhagic events",
                 "itp" = "Idiopathic Thrombocytopenic Purpura",
                 "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "throm_cvst" = "Venous thromboembolic events" )
 
-# Change this depending on whether main analysis, sensitivty analysis etc
+# Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
 #study <- 'SCCS'
-study <- 'case-control-sensitivity'
-#study <- 'case-control'
+study <- 'case_control_sensitivity_FE'
+#study <- 'case_control_FE'
 
 path <- paste0('./output/', study, '/')
 
