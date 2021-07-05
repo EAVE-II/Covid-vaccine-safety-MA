@@ -6,7 +6,7 @@
 ##
 ## Code author: Chris Robertson, Steven Kerr
 ##
-## Description: This does the meta analysis using estimated odds ratios for adverse events
+## Description: This does the meta analysis for the case-control study using estimated odds ratios for adverse events
 ##              following vaccination from each country
 ######################################################################
 
@@ -16,7 +16,7 @@ library(tidyverse)
 library(meta)
 library(stringr)
 
-source('./code/01_MA_Input.R')
+source('./code/case_control_analysis/01_MA_Input.R')
 
 ####################### FUNCTIONS #############################################
 
@@ -153,7 +153,6 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "throm_cvst" = "Venous thromboembolic events" )
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-#study <- 'SCCS'
 study <- 'case_control_sensitivity_FE'
 #study <- 'case_control_FE'
 

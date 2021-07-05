@@ -6,8 +6,7 @@
 ##
 ## Code author: Chris Robertson, Steven Kerr
 ##
-## Description: This does the meta analysis using estimated odds ratios for adverse events
-##              following vaccination from each country
+## Description: This prepares the data for the case-control meta-analysis
 ######################################################################
 
 library(readxl)
@@ -74,22 +73,21 @@ read_eng_avg <- function(file){
 # This reads in English data, with no weighting as in read_eng_avg
 # file is the name of the file in data folder
 read_eng <- function(file){
-  group_names <- c("any_haem","throm_cvst", "any_throm", "any_itp", "itp_gen", "itp", "Arterial_thromb")
-  
+
+  sheets <- c( "any_haem" = 1,"throm_cvst" = 2, "itp_gen" = 5, "itp" = 6, "Arterial_thromb" = 7)
+
   output <- read_xlsx( paste0("./data/", file) , sheet=1)
-  output$group <- group_names[1]
+  output$group <- names(sheets)[1]
   
-  
-  # Miss out sheet 4 in the loop because it is a group that we're not using
-  for (i in c(2,3,5,6,7)) { 
-    #i <- 7
+  for (i in sheets) { 
+    #i <- 6
     new_block <- read_xlsx( paste0("./data/", file) , sheet=i)
-    new_block$group <- group_names[i]
+    new_block$group <- names(sheets)[i]
     
-    output <- rbind(output, new_block)
+    new_block <- convert_to_numeric(new_block, names(new_block)[4:10])
+    
+    output <- bind_rows(output, new_block)
   }
-  
-  output <- convert_to_numeric(output, names(output)[4:10])
   
   return(output)
 }
@@ -108,6 +106,7 @@ scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
 # Sensitivity analysis
 eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
 
+
 # Welsh data
 #wales <- read_csv("./data/t_n_coef_all_long.csv")
 # Sensitivty analysis
@@ -119,11 +118,13 @@ scot <- scot %>%  dplyr::rename(RR=HR) %>%
   mutate(log_rr = log(RR), log_lcl = log(LCL), log_ucl = log(UCL)) %>% 
   mutate(se_log_rr = (log_ucl - log_lcl)/4)
 
+
+
 eng <- rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country))
 
 eng <- eng %>% dplyr::relocate(group, .after=Endpoint) %>% dplyr::relocate(se_log_rr, .after=last_col())
 
-eng <- eng %>% mutate(Status = gsub("AstraZeneca", "AZ",Status)) %>% 
+eng <- eng %>% mutate(Status = gsub("AstraZeneca", "AZ",Status)) %>%
   mutate(Status = gsub("Pfizer", "PB",Status))
 
 eng$country <- 'England - RCGP'
