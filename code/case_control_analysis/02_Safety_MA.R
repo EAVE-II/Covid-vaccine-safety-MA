@@ -155,10 +155,10 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
 #study <- 'case_control_sensitivity_'
-#study <- 'case_control_'
-study <- 'check_'
+study <- 'case_control_'
+#study <- 'check_'
 
-ma_type <- 'FE'
+ma_type <- 'RE'
 
 study <- paste0(study, ma_type)
 
@@ -206,7 +206,7 @@ for (i in 1:length(endpoints) ) {
   output_list$az_tab <- analysis_objects[[1]]
   output_list$az <- analysis_objects[[2]]
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1200, height = 750)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 900, height = 750)
 
   forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),

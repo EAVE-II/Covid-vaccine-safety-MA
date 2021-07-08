@@ -93,21 +93,21 @@ read_eng <- function(file){
 
 # Scottish data
 # Main analysis
-#scot <- read.csv("./data/scotland_ma_results.csv")
+scot <- read.csv("./data/scotland_ma_results.csv")
 # Sensitivity analysis
-scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
+#scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
 
 # English data
 # Main analysis
-#eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
+eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
 # Sensitivity analysis
-eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
+#eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
 
 
 # Welsh data
-#wales <- read_csv("./data/t_n_coef_all_long.csv")
+wales <- read_csv("./data/t_n_coef_all_long.csv")
 # Sensitivty analysis
-wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
+#wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
 
 ####################### PREPARE DATA ###################################
 
