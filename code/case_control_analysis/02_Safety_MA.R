@@ -55,8 +55,8 @@ time_replace <- function(vector){
 }
 
 # Test
-vacc <- 'AZ'
-event <- 'any_haem'
+#vacc <- 'AZ'
+#event <- 'itp'
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -93,7 +93,7 @@ create_table_ma_plot <- function(vacc, event){
                 bylab = 'Time period')
 
   TE <- ma$TE
-  TE[exp(TE) > 1000] <- NA
+  TE[exp(TE) > 15] <- NA
   ma$TE <- TE
 
   # Upper and lower limits for confidence intervals have to be set strategically in order to not get an 
@@ -118,19 +118,19 @@ create_table_ma_plot <- function(vacc, event){
 
 # Combine individual tables into one for publication
 create_pub_table <- function(){
+  
+  AZ_table <- data.frame()
+  PB_table <- data.frame()
+  
   for (i in 1:length(endpoints)) { 
     #i <- 2
 
     input <- readRDS(paste0(path, 'ma_res_', names(endpoints)[i],".rds") )
     
-    if (i == 1){
-      AZ_table <- input$az_tab
-      PB_table <- input$pb_tab
-    } else {
-      AZ_table <- rbind(AZ_table, input$az_tab)
-      PB_table <- rbind(PB_table, input$pb_tab)
-    }
+      AZ_table <- bind_rows(AZ_table, input$az_tab)
+      PB_table <- bind_rows(PB_table, input$pb_tab)
   }
+
   
   names(AZ_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   names(PB_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
@@ -154,11 +154,11 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "throm_cvst" = "Venous thromboembolic events" )
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-#study <- 'case_control_sensitivity_'
-study <- 'case_control_'
+study <- 'case_control_sensitivity_'
+#study <- 'case_control_'
 #study <- 'check_'
 
-ma_type <- 'RE'
+ma_type <- 'FE'
 
 study <- paste0(study, ma_type)
 
