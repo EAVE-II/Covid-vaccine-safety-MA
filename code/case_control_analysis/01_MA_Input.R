@@ -10,9 +10,7 @@
 ######################################################################
 
 library(readxl)
-library(plyr)
 library(tidyverse)
-library(meta)
 
 # Set working directory on PHS for SRK
 setwd('/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA')
@@ -74,15 +72,14 @@ read_eng_avg <- function(file){
 # file is the name of the file in data folder
 read_eng <- function(file){
 
-  sheets <- c( "any_haem" = 1,"throm_cvst" = 2, "itp_gen" = 5, "itp" = 6, "Arterial_thromb" = 7)
-
-  output <- read_xlsx( paste0("./data/", file) , sheet=1)
-  output$group <- names(sheets)[1]
+  sheets <- c( "Arterial_thromb" = 1, "any_haem" = 2, "itp" = 3, "itp_gen" = 4, "throm_cvst" = 5)
+  
+  output <- data.frame()
   
   for (i in sheets) { 
-    #i <- 6
+    #i <- 1
     new_block <- read_xlsx( paste0("./data/", file) , sheet=i)
-    new_block$group <- names(sheets)[i]
+    new_block$group <- names(sheets[i])
     
     new_block <- convert_to_numeric(new_block, names(new_block)[4:10])
     

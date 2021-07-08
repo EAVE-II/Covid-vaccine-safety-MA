@@ -55,7 +55,8 @@ create_ma_plot <- function(vacc, event){
   df <- df[order(df$country),]
   
   ma <- metagen(TE=df$log_OR, seTE=df$se_log_OR, studlab=df$country, byvar= pull(df, 'Time period'),
-                backtransf=TRUE, sm="OR", comb.fixed=TRUE, bylab = 'Time period')
+                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                bylab = 'Time period')
   
   TE <- ma$TE
   TE[exp(TE) > 1000] <- NA
@@ -68,15 +69,15 @@ create_ma_plot <- function(vacc, event){
   ma[['upper']] <- limits[[1]]
   ma[['lower']] <- limits[[2]]
   
-  limits <- set0(ma[['upper.fixed']], ma[['lower.fixed']])
+  limits <- set0(ma[[upper.]], ma[[lower.]])
   
-  ma[['upper.fixed']] <- limits[[1]]
-  ma[['lower.fixed']] <- limits[[2]]
+  ma[[upper.]] <- limits[[1]]
+  ma[[lower.]] <- limits[[2]]
   
-  limits <- set0(ma[['upper.fixed.w']], ma[['lower.fixed.w']])
+  limits <- set0(ma[[upper.w]], ma[[lower.w]])
   
-  ma[['upper.fixed.w']] <- limits[[1]]
-  ma[['lower.fixed.w']] <- limits[[2]]
+  ma[[upper.w]] <- limits[[1]]
+  ma[[lower.w]] <- limits[[2]]
   
   return(ma)
 }
@@ -90,8 +91,31 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "throm_cvst" = "Venous thromboembolic events" )
 
-# Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-study <- 'SCCS'
+study <- 'check_'
+
+ma_type <- 'FE'
+
+study <- paste0(study, ma_type)
+
+# These are parameters that are used in the metagen function, and also
+# in tinkering with the list of value it outputs
+if(ma_type == 'FE'){
+  comb.fixed <- TRUE
+  comb.random <- FALSE
+  
+  upper. <- 'upper.fixed'
+  lower. <- 'lower.fixed'
+  upper.w <- 'upper.fixed.w'
+  lower.w <- 'lower.fixed.w'
+} else if(ma_type == 'RE'){
+  comb.fixed <- FALSE
+  comb.random <- TRUE
+  
+  upper. <- 'upper.random'
+  lower. <- 'lower.random'
+  upper.w <- 'upper.random.w'
+  lower.w <- 'lower.random.w'
+}
 
 
 path <- paste0('./output/', study, '/')
@@ -111,7 +135,7 @@ for (i in 1:length(endpoints) ) {
   
   png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1000, height = 350)
   
-  forest.meta(output_list$az, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
+  forest.meta(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
          colgap=unit(5, "cm"))
   
@@ -121,7 +145,7 @@ for (i in 1:length(endpoints) ) {
   
   png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1000, height = 350)
   
-  forest.meta(output_list$pb, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+  forest.meta(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
          colgap=unit(4.1, "cm"))
   

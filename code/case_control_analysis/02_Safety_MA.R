@@ -55,8 +55,8 @@ time_replace <- function(vector){
 }
 
 # Test
-# vacc <- 'AZ'
-#event <- 'itp'
+vacc <- 'AZ'
+event <- 'any_haem'
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -89,7 +89,8 @@ create_table_ma_plot <- function(vacc, event){
   table <- rbind(new_row, table)
   
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
-                  backtransf=TRUE, sm="OR", comb.fixed=TRUE, bylab = 'Time period')
+                  backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                bylab = 'Time period')
 
   TE <- ma$TE
   TE[exp(TE) > 1000] <- NA
@@ -101,16 +102,16 @@ create_table_ma_plot <- function(vacc, event){
 
   ma[['upper']] <- limits[[1]]
   ma[['lower']] <- limits[[2]]
+  
+  limits <- set0(ma[[upper.]], ma[[lower.]])
 
-  limits <- set0(ma[['upper.fixed']], ma[['lower.fixed']])
+  ma[[upper.]] <- limits[[1]]
+  ma[[lower.]] <- limits[[2]]
 
-  ma[['upper.fixed']] <- limits[[1]]
-  ma[['lower.fixed']] <- limits[[2]]
+  limits <- set0(ma[[upper.w]], ma[[lower.w]])
 
-  limits <- set0(ma[['upper.fixed.w']], ma[['lower.fixed.w']])
-
-  ma[['upper.fixed.w']] <- limits[[1]]
-  ma[['lower.fixed.w']] <- limits[[2]]
+  ma[[upper.w]] <- limits[[1]]
+  ma[[lower.w]] <- limits[[2]]
 
   return(list(table, ma))
 }
@@ -153,8 +154,33 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "throm_cvst" = "Venous thromboembolic events" )
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-study <- 'case_control_sensitivity_FE'
-#study <- 'case_control_FE'
+#study <- 'case_control_sensitivity_'
+#study <- 'case_control_'
+study <- 'check_'
+
+ma_type <- 'FE'
+
+study <- paste0(study, ma_type)
+
+# These are parameters that are used in the metagen function, and also
+# in tinkering with the list of value it outputs
+if(ma_type == 'FE'){
+  comb.fixed <- TRUE
+  comb.random <- FALSE
+
+  upper. <- 'upper.fixed'
+  lower. <- 'lower.fixed'
+  upper.w <- 'upper.fixed.w'
+  lower.w <- 'lower.fixed.w'
+} else if(ma_type == 'RE'){
+  comb.fixed <- FALSE
+  comb.random <- TRUE
+  
+  upper. <- 'upper.random'
+  lower. <- 'lower.random'
+  upper.w <- 'upper.random.w'
+  lower.w <- 'lower.random.w'
+  }
 
 path <- paste0('./output/', study, '/')
 
@@ -163,11 +189,12 @@ path <- paste0('./output/', study, '/')
 # Create figures output lists etc in a loop
 for (i in 1:length(endpoints) ) { 
   output_list <- list()
-  i <- 3
+  #i <- 2
   
-  if(i==3){
-    i <- 4
-  }
+  # Sometimes do itp separately if it causes issues
+  # if(i==3){
+  #   i <- 4
+  # }
   
   print(i)
   
@@ -181,7 +208,7 @@ for (i in 1:length(endpoints) ) {
   
   png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1200, height = 750)
 
-  forest(output_list$az, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
+  forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
        colgap=unit(4, "cm"))
 
@@ -195,7 +222,7 @@ for (i in 1:length(endpoints) ) {
   
   png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 900, height = 750)
   
-  forest(output_list$pb, comb.random=FALSE, comb.fixed=TRUE, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+  forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
          colgap=unit(4, "cm"))
   

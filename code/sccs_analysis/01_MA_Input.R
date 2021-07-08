@@ -30,13 +30,11 @@ convert_to_numeric <- function(df, cols){
 # Needs changed depending on whether doing case-control analysis, or SCCS.
 read_eng <- function(file){
   
-  # For main analysis and Feb 21st sensitivity analysis
-  #sheets <- c( "any_haem" = 1,"throm_cvst" = 2, "itp_gen" = 5, "itp" = 6, "Arterial_thromb" = 7)
   # For SCCS
-  sheets <- c( "any_haem" = 1,"throm_cvst" = 2, "itp_gen" = 3, "itp" = 4, "Arterial_thromb" = 5)
+  sheets <- c( "Arterial_thromb" = 1, "any_haem" = 2, "itp" = 3, "itp_gen" = 4, "throm_cvst" = 5)
 
   for (i in sheets) { 
-    #i <- 7
+    #i <- 1
     
     if(i == 1){ output <- read_xlsx( paste0("./data/", file) , sheet=1)
                 output$group <- names(sheets)[1] }
