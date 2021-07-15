@@ -91,23 +91,21 @@ read_eng <- function(file){
 
 ##################### IMPORT DATA ##################################
 
-# Scottish data
-# Main analysis
-#scot <- read.csv("./data/scotland_ma_results.csv")
-# Sensitivity analysis
-scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
+study <- 'case_control_FE'
 
-# English data
-# Main analysis
-#eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
-# Sensitivity analysis
-eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
-
-
-# Welsh data
-#wales <- read_csv("./data/t_n_coef_all_long.csv")
-# Sensitivty analysis
-wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
+if(grepl('sensitivity', study, fixed = TRUE) ){
+  scot <- read.csv("./data/scotland_ma_results_Feb21_sensitivity.csv")
+  
+  eng <- read_eng('RCGP-SENSITIVITY-Feb-21-SAFETY.xlsx')
+  
+  wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
+} else {
+  scot <- read.csv("./data/scotland_ma_results.csv") 
+  
+  eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
+  
+  wales <- read_csv("./data/t_n_coef_all_long.csv")
+}
 
 ####################### PREPARE DATA ###################################
 
@@ -117,7 +115,7 @@ scot <- scot %>%  dplyr::rename(RR=HR) %>%
 
 
 
-eng <- rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country))
+eng <- dplyr::rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country))
 
 eng <- eng %>% dplyr::relocate(group, .after=Endpoint) %>% dplyr::relocate(se_log_rr, .after=last_col())
 
@@ -128,9 +126,9 @@ eng$country <- 'England - RCGP'
 
 
 
-wales <- wales %>% filter(model_type %in% c("fully_adjusted", "reference")) %>% dplyr::select(-p_event, -statistic, -p.value)
-names(wales) <- c("Endpoint","model_type","Status","N","R","log_rr","se_log_rr","RR","LCL","UCL")
-wales <- wales %>% dplyr::select(-model_type)
+wales <- wales %>% filter(model_type %in% c("fully_adjusted", "reference")) %>% dplyr::select(-p_event, -statistic, -p.value, -model_type)
+names(wales) <- c("Endpoint", "Status","N","R","log_rr","se_log_rr","RR","LCL","UCL")
+
 wales<- mutate(wales, Endpoint = gsub("Atrial Thrombosis", "Arterial Thrombosis", Endpoint) )
 wales <- wales %>% mutate( group = c( rep("any",13), rep("Arterial_thromb", 13), rep("throm_cvst", 13), rep("any_haem",13), 
                             rep("any_itp", 13), rep("any_throm", 13), rep("itp",13),  rep("itp_gen",13)  ))
@@ -144,8 +142,6 @@ wales <- wales %>% mutate(Status = gsub("UV","uv",Status),
                       Status = gsub("00-28","0:27",Status))
 wales <- wales %>%  mutate(country = "Wales") %>% 
   dplyr::relocate(country, .after=group)
-
-wales <- filter(wales, !is.na(RR))
 
 ######################## COMBINE DATA ################################
 df <- bind_rows(eng, dplyr::select(scot, -log_lcl, -log_ucl) ,wales)
@@ -161,4 +157,10 @@ df <- df %>% mutate(vaccine = case_when(grepl("AZ", Status) ~ "AZ",
   mutate(time = gsub("AZ_","",time)) %>% 
   mutate(time=gsub("PB_", "", time)) %>% 
   mutate(time=factor(time, levels =c("uv","v1_0:6","v1_7:13","v1_14:20","v1_21:27","v1_0:27","v1_28+" ,  "v2")))
+
+df$percent <- round (df$R * 100 / df$N, 1)
+
+df <- mutate(df, percent = case_when( N < 5 & N > 0 & R!= 0 ~ '',
+                                      R < 5 & R > 0 ~ paste0('(<', sprintf('%.1f',5*100/N), '%)' ),
+                                      TRUE ~  paste0('(', sprintf('%.1f',R*100/N), '%)')) )
 

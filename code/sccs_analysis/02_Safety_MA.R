@@ -151,7 +151,5 @@ for (i in 1:length(endpoints) ) {
   
   dev.off()
   
-  
-  
   saveRDS(output_list,paste0(path, "/ma_res_" , output_list$group, ".rds"))
 }

@@ -11,12 +11,9 @@
 ######################################################################
 
 library(readxl)
-library(plyr)
 library(tidyverse)
 library(meta)
 library(stringr)
-
-source('./code/case_control_analysis/01_MA_Input.R')
 
 ####################### FUNCTIONS #############################################
 
@@ -55,8 +52,12 @@ time_replace <- function(vector){
 }
 
 # Test
-#vacc <- 'AZ'
-#event <- 'itp'
+vacc <- 'AZ'
+event <- 'itp'
+
+df_copy <- df
+
+df <- df_copy
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -65,21 +66,22 @@ create_table_ma_plot <- function(vacc, event){
   
   names(df) <- gsub('time', 'Time period', names(df))
   
-  times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27", "Day 0-27","Day 28+") 
+  df <- filter(df, group == event & vaccine %in% c(vacc, 'uv') )
   
-  df <- filter(df, `Time period` %in% times & vaccine==vacc & group == event)
+  df <- df[order( match(pull(df, 'Time period'), c('uv', times)),  match(df$country, countries)), ]
   
-  df <- df[order(df$country),]
+  table <- select(df, `Time period`, country, N, R, percent)
   
-  table <- select(df, `Time period`, country, N, R) %>% arrange(`Time period`, country) %>% 
-    pivot_wider(id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
-    select(1, 5, 2, 6, 3, 7, 4)
+  table[, c('N', 'R')][ table[, c('N', 'R')] < 5 & table[, c('N', 'R')] > 0 ] <- '<5'
   
-  table[is.na(table)] <- 0
-
-  table[, 2:ncol(table)][ table[, 2:ncol(table)] < 5 & table[, 2:ncol(table)] > 0 ] <- '<5'
+  table$R <- paste(table$R, table$percent, sep=' ' )
   
-  table <- table[match(times, pull(table, 'Time period')),]
+  table <- select(table, -percent)
+  
+  table <- pivot_wider(table, id_cols= `Time period`, names_from=country, values_from=c(N,R)) %>%
+          select(`Time period`, `N_England - RCGP`, `R_England - RCGP`, N_Scotland, R_Scotland, N_Wales, R_Wales)
+  
+  table <- table[match(c('uv', times), pull(table, 'Time period')),]
   
   # Format numbers with commas per three decimal places
   table <- mutate_if(table, is.numeric, ~formatC(round(.), format = "f", big.mark = ",", drop0trailing = TRUE) )
@@ -88,30 +90,42 @@ create_table_ma_plot <- function(vacc, event){
   
   table <- rbind(new_row, table)
   
+  df <- filter(df, vaccine != 'uv')
+
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
                   backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
-
-  TE <- ma$TE
-  TE[exp(TE) > 15] <- NA
-  ma$TE <- TE
-
-  # Upper and lower limits for confidence intervals have to be set strategically in order to not get an 
-  # error from forest(), but also to create a forest plot that isnt nonsensical.
-  limits <- setNA(ma[['upper']], ma[['lower']])
-
-  ma[['upper']] <- limits[[1]]
-  ma[['lower']] <- limits[[2]]
   
-  limits <- set0(ma[[upper.]], ma[[lower.]])
+  df$raw_weights <- ma$w.fixed
+  
+  df <- group_by(df, `Time period`) %>% mutate( norm_weights = raw_weights/sum(raw_weights) )
 
-  ma[[upper.]] <- limits[[1]]
-  ma[[lower.]] <- limits[[2]]
-
-  limits <- set0(ma[[upper.w]], ma[[lower.w]])
-
-  ma[[upper.w]] <- limits[[1]]
-  ma[[lower.w]] <- limits[[2]]
+  df <- filter(df, norm_weights > 10**-5 & R!= 0)
+  
+  ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
+                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                bylab = 'Time period')
+  
+  # TE <- ma$TE
+  # TE[exp(TE) > 100] <- NA
+  # ma$TE <- TE
+  # 
+  # Upper and lower limits for confidence intervals have to be set strategically in order to not get an
+  # # error from forest(), but also to create a forest plot that isnt nonsensical.
+  # limits <- setNA(ma[['upper']], ma[['lower']])
+  # 
+  # ma[['upper']] <- limits[[1]]
+  # ma[['lower']] <- limits[[2]]
+  # 
+  # limits <- setNA(ma[[upper.]], ma[[lower.]])
+  # 
+  # ma[[upper.]] <- limits[[1]]
+  # ma[[lower.]] <- limits[[2]]
+  # 
+  # limits <- setNA(ma[[upper.w]], ma[[lower.w]])
+  # 
+  # ma[[upper.w]] <- limits[[1]]
+  # ma[[lower.w]] <- limits[[2]]
 
   return(list(table, ma))
 }
@@ -153,11 +167,17 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "throm_cvst" = "Venous thromboembolic events" )
 
-# Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-study <- 'case_control_sensitivity_'
-#study <- 'case_control_'
-#study <- 'check_'
+# Time periods, in order we want them to appear in tables/figures
+times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27","Day 28+", "Day 0-27")
 
+countries <- c('England - RCGP', 'Scotland', 'Wales')
+
+# Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
+#study <- 'case_control_'
+study <- 'case_control_sensitivity_'
+
+
+# This should be FE for fixed effectts, or RE for random effects
 ma_type <- 'FE'
 
 study <- paste0(study, ma_type)
@@ -167,34 +187,35 @@ study <- paste0(study, ma_type)
 if(ma_type == 'FE'){
   comb.fixed <- TRUE
   comb.random <- FALSE
+  
+  weight <- 'w.fixed'
 
-  upper. <- 'upper.fixed'
-  lower. <- 'lower.fixed'
-  upper.w <- 'upper.fixed.w'
-  lower.w <- 'lower.fixed.w'
+  # upper. <- 'upper.fixed'
+  # lower. <- 'lower.fixed'
+  # upper.w <- 'upper.fixed.w'
+  # lower.w <- 'lower.fixed.w'
 } else if(ma_type == 'RE'){
   comb.fixed <- FALSE
   comb.random <- TRUE
   
-  upper. <- 'upper.random'
-  lower. <- 'lower.random'
-  upper.w <- 'upper.random.w'
-  lower.w <- 'lower.random.w'
+  weight <- 'w.random'
+  
+  # upper. <- 'upper.random'
+  # lower. <- 'lower.random'
+  # upper.w <- 'upper.random.w'
+  # lower.w <- 'lower.random.w'
   }
 
 path <- paste0('./output/', study, '/')
 
 ############################################################################
 
+source('./code/case_control_analysis/01_MA_Input.R')
+
 # Create figures output lists etc in a loop
 for (i in 1:length(endpoints) ) { 
   output_list <- list()
-  #i <- 2
-  
-  # Sometimes do itp separately if it causes issues
-  # if(i==3){
-  #   i <- 4
-  # }
+  #i <- 1
   
   print(i)
   
@@ -206,11 +227,11 @@ for (i in 1:length(endpoints) ) {
   output_list$az_tab <- analysis_objects[[1]]
   output_list$az <- analysis_objects[[2]]
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 900, height = 750)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1050, height = 750)
 
   forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-       colgap=unit(4, "cm"))
+       colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
 
   dev.off()
   
@@ -220,15 +241,14 @@ for (i in 1:length(endpoints) ) {
   output_list$pb_tab <- analysis_objects[[1]]
   output_list$pb <- analysis_objects[[2]]
   
-  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 900, height = 750)
+  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1050, height = 750)
   
   forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4, "cm"))
+         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
   
   dev.off()
   
- 
 
 saveRDS(output_list,paste0(path, "/ma_res_" , output_list$group, ".rds"))
 }
