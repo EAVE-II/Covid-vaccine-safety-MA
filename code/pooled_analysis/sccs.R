@@ -81,9 +81,9 @@ df<- rbind(df, wales)
 df$ID <- ceiling(as.numeric(rownames(df))/3)
 
 event_count <- group_by(df, vaccine_type, period) %>% filter(event == 1) %>% tally
-  
 
-bob <- filter(df, vaccine_type == 'AZ', event == 1, period == 'Clearance')
+event_count_n <- event_count$n[c(2,1,3, 5,4,6)]
+  
 ########################## RESULTS ############################
 
 # Ensure Pre-risk is the baseline level 
@@ -96,10 +96,11 @@ sccs_PB <- clogit(event ~ period + strata(ID) + offset(log(interval)),data=df, s
 
 
 sccs_results <- data.frame( period= c('AZ', 'Pre-risk', 'Clearance', 'Risk', 'PB', 'Pre-risk', 'Clearance','Risk'),
+                            'Number of events' = c( '', event_count_n[1:3], '', event_count_n[4:6] ),
                             OR = c('', 1,  round(exp(sccs_AZ$coef), 2), '', 1, round(exp(sccs_PB$coef), 2)), 
-                            `CI` = '', stringsAsFactors = FALSE)
+                            `CI` = '', stringsAsFactors = FALSE, check.names = FALSE)
 
-sccs_results <- left_join(sccs_results, select(event_count, period, n))
+
 
 se <- c(0.6110, 0.3000, 1.05409, 0.79408)
 

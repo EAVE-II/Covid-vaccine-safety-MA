@@ -100,7 +100,7 @@ if(grepl('sensitivity', study, fixed = TRUE) ){
   
   wales <- read_csv("./data/t_n_coef_all_long_sensitivity.csv")
 } else {
-  scot <- read.csv("./data/scotland_ma_results.csv") 
+  scot <- read.csv("./data/scotland_ma_results_combined.csv") 
   
   eng <- read_eng('RCGP-UPDATED-DACVAP-SAFETY.xlsx')
   
@@ -109,10 +109,8 @@ if(grepl('sensitivity', study, fixed = TRUE) ){
 
 ####################### PREPARE DATA ###################################
 
-scot <- scot %>%  dplyr::rename(RR=HR) %>% 
-  mutate(log_rr = log(RR), log_lcl = log(LCL), log_ucl = log(UCL)) %>% 
-  mutate(se_log_rr = (log_ucl - log_lcl)/4)
-
+scot <- scot %>% mutate(log_rr = log(RR), log_lcl = log(LCL), log_ucl = log(UCL)) %>% 
+                 mutate(se_log_rr = (log_ucl - log_lcl)/3.92)
 
 
 eng <- dplyr::rename(eng, c(RR = OR, log_rr = `log(OR)`, se_log_rr = `SE log(OR)`, country = Country))

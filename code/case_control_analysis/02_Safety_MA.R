@@ -51,13 +51,6 @@ time_replace <- function(vector){
                             "v1_28" = 'Day 28'))
 }
 
-# Test
-vacc <- 'AZ'
-event <- 'itp'
-
-df_copy <- df
-
-df <- df_copy
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_table_ma_plot <- function(vacc, event){
@@ -96,7 +89,7 @@ create_table_ma_plot <- function(vacc, event){
                   backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
-  df$raw_weights <- ma$w.fixed
+  df$raw_weights <- ma[[weight]]
   
   df <- group_by(df, `Time period`) %>% mutate( norm_weights = raw_weights/sum(raw_weights) )
 

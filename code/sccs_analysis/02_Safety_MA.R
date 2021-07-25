@@ -42,10 +42,8 @@ set0 <- function(upper, lower){
   return(list(upper, lower))
 }
 
-
-# Test
-# vacc <- 'AZ'
-#event <- 'itp'
+vacc <- 'AZ'
+event <- 'any_haem'
 
 # Create individual table + meta-analysis for a given vaccine and event
 create_ma_plot <- function(vacc, event){
@@ -58,26 +56,36 @@ create_ma_plot <- function(vacc, event){
                 backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
-  TE <- ma$TE
-  TE[exp(TE) > 1000] <- NA
-  ma$TE <- TE
+  df$raw_weights <- ma[[weight]]
+  
+  df <- group_by(df, `Time period`) %>% mutate( norm_weights = raw_weights/sum(raw_weights) )
+  
+  df <- filter(df, norm_weights > 10**-5)
+  
+  ma <- metagen(TE=df$log_OR, seTE=df$se_log_OR, studlab=df$country, byvar= pull(df, 'Time period'),
+                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                bylab = 'Time period')
+  
+  # TE <- ma$TE
+  # TE[exp(TE) > 1000] <- NA
+  # ma$TE <- TE
   
   # Upper and lower limits for confidence intervals have to be set strategically in order to not get an 
   # error from forest(), but also to create a forest plot that isnt nonsensical.
-  limits <- setNA(ma[['upper']], ma[['lower']])
-  
-  ma[['upper']] <- limits[[1]]
-  ma[['lower']] <- limits[[2]]
-  
-  limits <- set0(ma[[upper.]], ma[[lower.]])
-  
-  ma[[upper.]] <- limits[[1]]
-  ma[[lower.]] <- limits[[2]]
-  
-  limits <- set0(ma[[upper.w]], ma[[lower.w]])
-  
-  ma[[upper.w]] <- limits[[1]]
-  ma[[lower.w]] <- limits[[2]]
+  # limits <- setNA(ma[['upper']], ma[['lower']])
+  # 
+  # ma[['upper']] <- limits[[1]]
+  # ma[['lower']] <- limits[[2]]
+  # 
+  # limits <- set0(ma[[upper.]], ma[[lower.]])
+  # 
+  # ma[[upper.]] <- limits[[1]]
+  # ma[[lower.]] <- limits[[2]]
+  # 
+  # limits <- set0(ma[[upper.w]], ma[[lower.w]])
+  # 
+  # ma[[upper.w]] <- limits[[1]]
+  # ma[[lower.w]] <- limits[[2]]
   
   return(ma)
 }
@@ -91,7 +99,7 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
                 "itp_gen" = "Thrombocytopenic events (excluding ITP)",
                 "throm_cvst" = "Venous thromboembolic events" )
 
-study <- 'check_'
+study <- 'SCCS_'
 
 ma_type <- 'FE'
 
@@ -103,18 +111,22 @@ if(ma_type == 'FE'){
   comb.fixed <- TRUE
   comb.random <- FALSE
   
-  upper. <- 'upper.fixed'
-  lower. <- 'lower.fixed'
-  upper.w <- 'upper.fixed.w'
-  lower.w <- 'lower.fixed.w'
+  weight <- 'w.fixed'
+  
+  # upper. <- 'upper.fixed'
+  # lower. <- 'lower.fixed'
+  # upper.w <- 'upper.fixed.w'
+  # lower.w <- 'lower.fixed.w'
 } else if(ma_type == 'RE'){
   comb.fixed <- FALSE
   comb.random <- TRUE
   
-  upper. <- 'upper.random'
-  lower. <- 'lower.random'
-  upper.w <- 'upper.random.w'
-  lower.w <- 'lower.random.w'
+  weight <- 'w.random'
+  
+  # upper. <- 'upper.random'
+  # lower. <- 'lower.random'
+  # upper.w <- 'upper.random.w'
+  # lower.w <- 'lower.random.w'
 }
 
 
@@ -127,27 +139,26 @@ for (i in 1:length(endpoints) ) {
   output_list <- list()
   #i <- 1
 
-  
   output_list$Endpoint = endpoints[[i]]
   output_list$group = names(endpoints)[i]
   
   output_list$az <- create_ma_plot('AZ', output_list$group)
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1000, height = 350)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1100, height = 350)
   
   forest.meta(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(5, "cm"))
+         colgap=unit(5, "cm"), rightcols = c("effect", "ci", weight))
   
   dev.off()
 
   output_list$pb <- create_ma_plot('PB', output_list$group) 
   
-  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1000, height = 350)
+  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1100, height = 350)
   
   forest.meta(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4.1, "cm"))
+         colgap=unit(4.1, "cm"), rightcols = c("effect", "ci", weight))
   
   dev.off()
   

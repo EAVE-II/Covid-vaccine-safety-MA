@@ -53,7 +53,7 @@ read_eng <- function(file){
 ##################### IMPORT DATA ##################################
 
 # Scottish data
-scot <- read.csv("./data/scotland_sccs_ma_results.csv")
+scot <- read.csv("./data/scotland_sccs_results.csv")
 
 # English data
 eng <- read_eng('SCCS-sensitivity-analysis-Table_3.xlsx')
