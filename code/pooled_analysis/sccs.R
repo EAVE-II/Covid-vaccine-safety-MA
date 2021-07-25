@@ -62,7 +62,7 @@ eng <- data.frame( 'period' = rep( c('Pre-risk', 'Clearance', 'Risk'), 2),
                      N =c(3,1,9,4,0,0))
 
 
-scot <- readRDS('./data/pooled_analyses/scot_sccs_data.rds')
+scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds')
 
 scot <- dplyr::rename(scot, period = expgr, vaccine_type = Vacc.Type) %>%
         select(period, interval, event, vaccine_type)
@@ -102,7 +102,7 @@ sccs_results <- data.frame( period= c('AZ', 'Pre-risk', 'Clearance', 'Risk', 'PB
 
 
 
-se <- c(0.6110, 0.3000, 1.05409, 0.79408)
+se <- c(0.6110, 0.3003, 1.08012, 0.81650)
 
 upper <- sprintf('%.2f', exp( c(sccs_AZ$coef, sccs_PB$coef) + 1.96 * se) )
 lower <- sprintf('%.2f', exp( c(sccs_AZ$coef, sccs_PB$coef) - 1.96 * se) )
