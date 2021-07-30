@@ -80,6 +80,19 @@ df<- rbind(df, wales)
 # Artificial IDs
 df$ID <- ceiling(as.numeric(rownames(df))/3)
 
+# Filter out people who ddin't have an event in either Pre-risk, clearance or risk periods
+# This isn't actually necessary - the package filters them out.
+df <- group_by(df, ID) %>% filter( sum(event) == 1)
+
+# We are counting incident events only. That is, the first time the person had the event.
+# We are also estimating a conditional Poisson model, but using the fact that the
+# likelihood function is identical to correponding logistic regression. Effectively the
+# dependent variable is the count per day of new CVST events in the risk period.
+# The offset means it is a rate we are estimating, rather than a count
+df <- mutate(df, ind = case_when( period == 'Risk' ~ 28,
+                                  period == 'Pre-risk' ~ 90,
+                                  period == 'Clearance' ~ 14))
+
 event_count <- group_by(df, vaccine_type, period) %>% filter(event == 1) %>% tally
 
 event_count_n <- event_count$n[c(2,1,3, 5,4,6)]

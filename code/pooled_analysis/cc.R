@@ -21,3 +21,11 @@ setwd('/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA')
 
 
 
+wales <- read_csv('./data/pooled_analyses/cc_cvst_2.csv')
+
+wales_vacs <-read_csv('./data/pooled_analyses/age_vaccine_aggregated_cohort_count.csv') 
+
+wales_vac_totals <- group_by(wales_vacs, FIRST_VACC) %>% summarise( total = sum(NUMBER_OF_INDIVIDUALS)) 
+
+
+
