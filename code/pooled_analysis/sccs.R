@@ -51,12 +51,12 @@ rehydrate <- function(df){
 
 ######################## LOAD DATA ############################
 
-# Values here are taken from data/pooled/analysis/sccs.analysis.html
+# Values here are taken from data/pooled_analyses/sccs.analysis.html
 wales <- data.frame( 'period' = rep( c('Pre-risk', 'Clearance', 'Risk'), 2),
                       vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
                       N =c(6,0,1,1,1,1))
 
-# Values here are taken from data/pooled/analysis/RCGP_CVST_SCCS_eventcounts.xlsx
+# Values here are taken from data/pooled_analyses/RCGP_CVST_SCCS_eventcounts.xlsx
 eng <- data.frame( 'period' = rep( c('Pre-risk', 'Clearance', 'Risk'), 2),
                      vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
                      N =c(3,1,9,4,0,0))
