@@ -86,7 +86,7 @@ create_table_ma_plot <- function(vacc, event){
   df <- filter(df, vaccine != 'uv')
 
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
-                  backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                  backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
   df$raw_weights <- ma[[weight]]
@@ -96,7 +96,7 @@ create_table_ma_plot <- function(vacc, event){
   df <- filter(df, norm_weights > 10**-5 & R!= 0)
   
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
-                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
   # TE <- ma$TE
@@ -169,7 +169,6 @@ countries <- c('England - RCGP', 'Scotland', 'Wales')
 #study <- 'case_control_'
 study <- 'case_control_sensitivity_'
 
-
 # This should be FE for fixed effectts, or RE for random effects
 ma_type <- 'FE'
 
@@ -238,7 +237,7 @@ for (i in 1:length(endpoints) ) {
   
   forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
+         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight), text.fixed = 'IRR')
   
   dev.off()
   

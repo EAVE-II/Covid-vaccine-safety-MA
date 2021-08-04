@@ -53,7 +53,7 @@ create_ma_plot <- function(vacc, event){
   df <- df[order(df$country),]
   
   ma <- metagen(TE=df$log_OR, seTE=df$se_log_OR, studlab=df$country, byvar= pull(df, 'Time period'),
-                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
   df$raw_weights <- ma[[weight]]
@@ -63,7 +63,7 @@ create_ma_plot <- function(vacc, event){
   df <- filter(df, norm_weights > 10**-5)
   
   ma <- metagen(TE=df$log_OR, seTE=df$se_log_OR, studlab=df$country, byvar= pull(df, 'Time period'),
-                backtransf=TRUE, sm="OR", comb.fixed=comb.fixed, comb.random = comb.random,
+                backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
   # TE <- ma$TE
