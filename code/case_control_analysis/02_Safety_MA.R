@@ -142,7 +142,7 @@ create_pub_table <- function(){
   names(AZ_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   names(PB_table) <- c(' ', 'England - RCGP', ' ', 'Scotland', ' ', 'Wales', ' ')
   
-  new_row <- c('Time period', rep( c('Number of cases', 'Number of controls'), 3))
+  new_row <- c('Time period', rep( c('Number of controls', 'Number of cases'), 3))
   
   AZ_table <- rbind(new_row, AZ_table)
   PB_table <- rbind(new_row, PB_table)
@@ -166,8 +166,8 @@ times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27","Day 28+", "Day 0-27"
 countries <- c('England - RCGP', 'Scotland', 'Wales')
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-study <- 'case_control_'
-#study <- 'case_control_sensitivity_'
+#study <- 'case_control_'
+study <- 'case_control_sensitivity_'
 
 # This should be FE for fixed effectts, or RE for random effects
 ma_type <- 'FE'
