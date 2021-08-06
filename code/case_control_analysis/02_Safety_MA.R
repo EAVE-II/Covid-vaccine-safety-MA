@@ -237,7 +237,7 @@ for (i in 1:length(endpoints) ) {
   
   forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight), text.fixed = 'IRR')
+         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
   
   dev.off()
   
