@@ -175,10 +175,10 @@ names(event_count) <- c('Event', 'England', 'Scotland', 'Wales')
 event_count <- event_count %>% mutate(Total = select(., England:Wales) %>% rowSums(na.rm = TRUE),
                                       Event = endpoints[event_count$Event])
 
-event_count <- mutate(event_count, England = England/5.453447,
-                                   Scotland = Scotland/4.716409,
-                                   Wales = Wales/2.033843, 
-                                  Total = Total/12.203699) %>%
+event_count <- mutate(event_count, England = England/1.912442 ,
+                                   Scotland = Scotland/1.653974 ,
+                                   Wales = Wales/0.635228 , 
+                                  Total = Total/4.201643 ) %>%
               mutate_if(is.numeric, ~formatC(round(., 2), format = "f", big.mark = ",", drop0trailing = TRUE))
                          
 
