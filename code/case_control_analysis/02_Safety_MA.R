@@ -65,7 +65,7 @@ create_table_ma_plot <- function(vacc, event){
   
   table <- select(df, `Time period`, country, N, R, percent)
   
-  table[, c('N', 'R')][ table[, c('N', 'R')] < 5 & table[, c('N', 'R')] > 0 ] <- '<5'
+  #table[, c('N', 'R')][ table[, c('N', 'R')] < 5 & table[, c('N', 'R')] > 0 ] <- '<5'
   
   table$R <- paste(table$R, table$percent, sep=' ' )
   
@@ -166,8 +166,8 @@ times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27","Day 28+", "Day 0-27"
 countries <- c('England - RCGP', 'Scotland', 'Wales')
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-#study <- 'case_control_'
-study <- 'case_control_sensitivity_'
+study <- 'case_control_'
+#study <- 'case_control_sensitivity_'
 
 # This should be FE for fixed effectts, or RE for random effects
 ma_type <- 'FE'

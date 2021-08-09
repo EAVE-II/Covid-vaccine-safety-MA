@@ -162,3 +162,25 @@ df <- mutate(df, percent = case_when( N < 5 & N > 0 & R!= 0 ~ '',
                                       R < 5 & R > 0 ~ paste0('(<', sprintf('%.1f',5*100/N), '%)' ),
                                       TRUE ~  paste0('(', sprintf('%.1f',R*100/N), '%)')) )
 
+
+# Create a csv that has event rates per million by country
+event_count <- filter(df, Status %in% c("uv", "AZ_v1_28+", "AZ_v1_0:27", "PB_v1_28+", "PB_v1_0:27") 
+                      & group %in% names(endpoints)) %>%
+               group_by(country, group) %>% summarise(R = sum(R) ) %>% 
+              pivot_wider(id_cols = group, names_from = country, values_from = R)
+  
+
+names(event_count) <- c('Event', 'England', 'Scotland', 'Wales')
+
+event_count <- event_count %>% mutate(Total = select(., England:Wales) %>% rowSums(na.rm = TRUE),
+                                      Event = endpoints[event_count$Event])
+
+event_count <- mutate(event_count, England = England/5.453447,
+                                   Scotland = Scotland/4.716409,
+                                   Wales = Wales/2.033843, 
+                                  Total = Total/12.203699) %>%
+              mutate_if(is.numeric, ~formatC(round(., 2), format = "f", big.mark = ",", drop0trailing = TRUE))
+                         
+
+write_csv(event_count, './output/event_count.csv')
+
