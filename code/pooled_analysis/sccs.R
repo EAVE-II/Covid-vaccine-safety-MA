@@ -128,3 +128,8 @@ names(sccs_results)[4] <- '95% CI'
 
 write.csv(sccs_results, './output/pooled_analysis/sccs_cvst.csv', row.names = FALSE)
 
+
+#df <-  df[1:3, ]
+
+#write_csv(df, '/conf/EAVE/GPanalysis/progs/SRK/ssc5a/ssc5a_expanded_data_example.csv')
+

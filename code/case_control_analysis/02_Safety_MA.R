@@ -98,27 +98,6 @@ create_table_ma_plot <- function(vacc, event){
   ma <- metagen(TE=df$log_rr, seTE=df$se_log_rr, studlab=df$country, byvar= pull(df, 'Time period'),
                 backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
-  
-  # TE <- ma$TE
-  # TE[exp(TE) > 100] <- NA
-  # ma$TE <- TE
-  # 
-  # Upper and lower limits for confidence intervals have to be set strategically in order to not get an
-  # # error from forest(), but also to create a forest plot that isnt nonsensical.
-  # limits <- setNA(ma[['upper']], ma[['lower']])
-  # 
-  # ma[['upper']] <- limits[[1]]
-  # ma[['lower']] <- limits[[2]]
-  # 
-  # limits <- setNA(ma[[upper.]], ma[[lower.]])
-  # 
-  # ma[[upper.]] <- limits[[1]]
-  # ma[[lower.]] <- limits[[2]]
-  # 
-  # limits <- setNA(ma[[upper.w]], ma[[lower.w]])
-  # 
-  # ma[[upper.w]] <- limits[[1]]
-  # ma[[lower.w]] <- limits[[2]]
 
   return(list(table, ma))
 }
@@ -170,7 +149,7 @@ study <- 'case_control_'
 #study <- 'case_control_sensitivity_'
 
 # This should be FE for fixed effectts, or RE for random effects
-ma_type <- 'FE'
+ma_type <- 'FE_RE'
 
 study <- paste0(study, ma_type)
 
@@ -181,22 +160,27 @@ if(ma_type == 'FE'){
   comb.random <- FALSE
   
   weight <- 'w.fixed'
+  
+  width <- 1050
+  height <- 750
 
-  # upper. <- 'upper.fixed'
-  # lower. <- 'lower.fixed'
-  # upper.w <- 'upper.fixed.w'
-  # lower.w <- 'lower.fixed.w'
 } else if(ma_type == 'RE'){
   comb.fixed <- FALSE
   comb.random <- TRUE
   
   weight <- 'w.random'
   
-  # upper. <- 'upper.random'
-  # lower. <- 'lower.random'
-  # upper.w <- 'upper.random.w'
-  # lower.w <- 'lower.random.w'
-  }
+  width <- 1050
+  height <- 750
+} else if(ma_type == 'FE_RE'){
+  comb.fixed <- TRUE
+  comb.random <- TRUE
+  
+  weight <- 'w.fixed'
+  
+  width <- 1050
+  height <- 800
+}
 
 path <- paste0('./output/', study, '/')
 
@@ -219,7 +203,7 @@ for (i in 1:length(endpoints) ) {
   output_list$az_tab <- analysis_objects[[1]]
   output_list$az <- analysis_objects[[2]]
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1050, height = 750)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = width, height = height)
 
   forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
@@ -227,13 +211,12 @@ for (i in 1:length(endpoints) ) {
 
   dev.off()
   
-
   analysis_objects <- create_table_ma_plot('PB', output_list$group) 
   
   output_list$pb_tab <- analysis_objects[[1]]
   output_list$pb <- analysis_objects[[2]]
   
-  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1050, height = 750)
+  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = width, height = height)
   
   forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),

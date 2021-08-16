@@ -131,13 +131,13 @@ wales<- mutate(wales, Endpoint = gsub("Atrial Thrombosis", "Arterial Thrombosis"
 wales <- wales %>% mutate( group = c( rep("any",13), rep("Arterial_thromb", 13), rep("throm_cvst", 13), rep("any_haem",13), 
                             rep("any_itp", 13), rep("any_throm", 13), rep("itp",13),  rep("itp_gen",13)  ))
 wales <- wales %>% dplyr::select(Endpoint, group, Status, N, R, RR:UCL, log_rr, se_log_rr) 
-wales <- wales %>% mutate(Status = gsub("UV","uv",Status),
-                      Status = gsub(" Dose 1 Day ","_v1_",Status),
-                      Status = gsub("00-06","0:6",Status),
-                      Status = gsub("07-13","7:13",Status),
-                      Status = gsub("14-20","14:20",Status),
-                      Status = gsub("21-27","21:27",Status),
-                      Status = gsub("00-28","0:27",Status))
+wales <- wales %>% mutate(Status = gsub("UV","uv",Status)) %>%
+                   mutate(Status = gsub(" Dose 1 Day ","_v1_",Status)) %>%
+                   mutate(Status = gsub("00-06","0:6",Status)) %>%
+                   mutate(Status = gsub("07-13","7:13",Status)) %>%
+                   mutate(Status = gsub("14-20","14:20",Status)) %>%
+                   mutate(Status = gsub("21-27","21:27",Status)) %>%
+                   mutate(Status = gsub("00-28","0:27",Status))
 wales <- wales %>%  mutate(country = "Wales") %>% 
   dplyr::relocate(country, .after=group)
 
@@ -179,7 +179,7 @@ event_count <- mutate(event_count, England = England/1.912442 ,
                                    Scotland = Scotland/1.653974 ,
                                    Wales = Wales/0.635228 , 
                                   Total = Total/4.201643 ) %>%
-              mutate_if(is.numeric, ~formatC(round(., 2), format = "f", big.mark = ",", drop0trailing = TRUE))
+              mutate_if(is.numeric, ~formatC(round(.), format = "f", big.mark = ",", drop0trailing = TRUE))
                          
 
 write_csv(event_count, './output/event_count.csv')
