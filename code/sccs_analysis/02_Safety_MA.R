@@ -66,27 +66,6 @@ create_ma_plot <- function(vacc, event){
                 backtransf=TRUE, sm="RR", comb.fixed=comb.fixed, comb.random = comb.random,
                 bylab = 'Time period')
   
-  # TE <- ma$TE
-  # TE[exp(TE) > 1000] <- NA
-  # ma$TE <- TE
-  
-  # Upper and lower limits for confidence intervals have to be set strategically in order to not get an 
-  # error from forest(), but also to create a forest plot that isnt nonsensical.
-  # limits <- setNA(ma[['upper']], ma[['lower']])
-  # 
-  # ma[['upper']] <- limits[[1]]
-  # ma[['lower']] <- limits[[2]]
-  # 
-  # limits <- set0(ma[[upper.]], ma[[lower.]])
-  # 
-  # ma[[upper.]] <- limits[[1]]
-  # ma[[lower.]] <- limits[[2]]
-  # 
-  # limits <- set0(ma[[upper.w]], ma[[lower.w]])
-  # 
-  # ma[[upper.w]] <- limits[[1]]
-  # ma[[lower.w]] <- limits[[2]]
-  
   return(ma)
 }
 
@@ -101,7 +80,7 @@ endpoints <- c( "Arterial_thromb" = "Arterial thromboembolic events",
 
 study <- 'SCCS_'
 
-ma_type <- 'FE'
+ma_type <- 'FE_RE'
 
 study <- paste0(study, ma_type)
 
@@ -113,22 +92,28 @@ if(ma_type == 'FE'){
   
   weight <- 'w.fixed'
   
-  # upper. <- 'upper.fixed'
-  # lower. <- 'lower.fixed'
-  # upper.w <- 'upper.fixed.w'
-  # lower.w <- 'lower.fixed.w'
+  width <- 1100
+  height <- 350
+  
 } else if(ma_type == 'RE'){
   comb.fixed <- FALSE
   comb.random <- TRUE
   
   weight <- 'w.random'
   
-  # upper. <- 'upper.random'
-  # lower. <- 'lower.random'
-  # upper.w <- 'upper.random.w'
-  # lower.w <- 'lower.random.w'
-}
+  width <- 1100
+  height <- 350
 
+} else if(ma_type == 'FE_RE'){
+  comb.fixed <- TRUE
+  comb.random <- TRUE
+  
+  weight <- 'w.fixed'
+  
+  width <- 1220
+  height <- 350
+
+}
 
 path <- paste0('./output/', study, '/')
 
@@ -144,21 +129,25 @@ for (i in 1:length(endpoints) ) {
   
   output_list$az <- create_ma_plot('AZ', output_list$group)
   
-  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = 1100, height = 350)
+  png(paste(path, 'AZ_', output_list$group, '_fig.png', sep = ''), width = width, height = height)
   
-  forest.meta(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
+  forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(5, "cm"), rightcols = c("effect", "ci", weight))
+         colgap=unit(3.25, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
+         rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
+  
   
   dev.off()
 
   output_list$pb <- create_ma_plot('PB', output_list$group) 
   
-  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = 1100, height = 350)
+  png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = width, height = height)
   
-  forest.meta(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+  forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4.1, "cm"), rightcols = c("effect", "ci", weight))
+         colgap=unit(3.25, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
+         rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
+  
   
   dev.off()
   

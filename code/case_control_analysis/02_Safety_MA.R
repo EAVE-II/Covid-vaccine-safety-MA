@@ -145,8 +145,8 @@ times <- c("Day 0-6", "Day 7-13", "Day 14-20", "Day 21-27","Day 28+", "Day 0-27"
 countries <- c('England - RCGP', 'Scotland', 'Wales')
 
 # Change this depending on whether main analysis, sensitivty analysis, fixed effects, random effects etc
-study <- 'case_control_'
-#study <- 'case_control_sensitivity_'
+#study <- 'case_control_'
+study <- 'case_control_sensitivity_'
 
 # This should be FE for fixed effectts, or RE for random effects
 ma_type <- 'FE_RE'
@@ -170,7 +170,7 @@ if(ma_type == 'FE'){
   
   weight <- 'w.random'
   
-  width <- 1050
+  width <- 1100
   height <- 750
 } else if(ma_type == 'FE_RE'){
   comb.fixed <- TRUE
@@ -178,7 +178,7 @@ if(ma_type == 'FE'){
   
   weight <- 'w.fixed'
   
-  width <- 1050
+  width <- 1220
   height <- 800
 }
 
@@ -207,7 +207,8 @@ for (i in 1:length(endpoints) ) {
 
   forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-       colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
+       colgap=unit(3.2, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
+       rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
 
   dev.off()
   
@@ -218,12 +219,13 @@ for (i in 1:length(endpoints) ) {
   
   png(paste(path, 'PB_', output_list$group, '_fig.png', sep = ''), width = width, height = height)
   
-  forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"), 
+  forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
-         colgap=unit(4, "cm"), rightcols = c("effect", "ci", weight))
+         colgap=unit(3.2, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
+         rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
   
   dev.off()
-  
+
 
 saveRDS(output_list,paste0(path, "/ma_res_" , output_list$group, ".rds"))
 }
