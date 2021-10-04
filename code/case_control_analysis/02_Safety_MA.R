@@ -208,7 +208,7 @@ for (i in 1:length(endpoints) ) {
   forest(output_list$az, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
        label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
        colgap=unit(3.2, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
-       rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
+       rightlabs = c('IRR', '95%-CI', 'Weight - fixed effect', 'Weight - random effects') )
 
   dev.off()
   
@@ -222,7 +222,7 @@ for (i in 1:length(endpoints) ) {
   forest(output_list$pb, comb.random=comb.random, comb.fixed=comb.fixed, overall=FALSE, leftcols=c("studlab"), leftlabs=c("Country"),
          label.right = "Higher Risk", label.left="Lower Risk", main="log(OR)", plotwidth = unit(8, "cm"),
          colgap=unit(3.2, "cm"), rightcols = c("effect", "ci", weight, 'w.random'),
-         rightlabs = c('IRR', 'CI', 'Weight - fixed effect', 'Weight - random effects') )
+         rightlabs = c('IRR', '95%-CI', 'Weight - fixed effect', 'Weight - random effects') )
   
   dev.off()
 
