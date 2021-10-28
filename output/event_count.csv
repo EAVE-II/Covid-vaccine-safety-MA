@@ -1,6 +1,5 @@
-Event,England,Scotland,Wales,Total
-Haemorrhagic events,814,726,"1,370",863
-Arterial thromboembolic events,"6,403","5,553","4,705","5,812"
-Idiopathic Thrombocytopenic Purpura,30,56,57,44
-Thrombocytopenic events (excluding ITP),289,203,60,220
-Venous thromboembolic events,"1,758","2,172","2,944","2,101"
+"","vacc_type","n"
+"1","AZ",29
+"2","Mo",3
+"3","PB",12
+"4",NA,8

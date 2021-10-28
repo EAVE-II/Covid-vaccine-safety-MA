@@ -72,7 +72,7 @@ prev_tests  <- readRDS(paste0(Location,"EAVE/GPanalysis/data/Tests.rds")) %>%
 # Remove duplicates - take the row with the highest number of tests
 prev_tests <- prev_tests %>%
   group_by(EAVE_LINKNO) %>%
-  summarise(n_tests = max(n_tests)) %>% 
+  dplyr::summarise(n_tests = max(n_tests)) %>%
   mutate(n_tests = if_else(is.na(n_tests),0L,n_tests) )
 
 
@@ -81,7 +81,7 @@ prev_tests <- prev_tests %>%
 pos_tests <- readRDS(paste0(Location,"EAVE/GPanalysis/data/Positive_Tests.rds")) %>%
   group_by(EAVE_LINKNO) %>%
   # Take minimum specimen date if multiple
-  summarise(specimen_date = min(specimen_date)) %>%
+  dplyr::summarise(specimen_date = min(specimen_date)) %>%
   # Calculate days from start date to specimen date
   mutate(days = as.numeric(specimen_date - a_begin)) %>%
   # Group days into categories
