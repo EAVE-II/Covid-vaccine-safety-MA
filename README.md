@@ -6,7 +6,7 @@
 >
 >**DOI:** [Insert DOI of paper here]
 >
->**Paper authors:** Chris Robertson, Steven Kerr, Eleftheria Vasieliou, Stuart Bedston, Mark Joy, Aziz Sheikh.
+>**Paper authors:** Chris Robertson, Steven Kerr, Eleftheria Vasieliou, Ting Shi, Aziz Sheikh.
 >
 >**Data source:** [Insert link to data source (if publicly available) here]
 
