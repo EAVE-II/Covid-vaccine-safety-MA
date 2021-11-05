@@ -51,7 +51,7 @@ rehydrate <- function(df){
 
 ######################## LOAD DATA ############################
 
-dataset = 'new'
+dataset = 'hosp_only'
 
 if (dataset == 'old'){
 # Old date with ~April 14th 2021 end date
@@ -67,18 +67,18 @@ eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
 
 
 scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds') %>%
-        dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
-        select(period, interval, event, vaccine_type) %>%
-        mutate(period = gsub("Pre.Vacc","Reference", period),
-                     period = gsub("Clearance","Pre-risk", period))
+  dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
+  select(period, interval, event, vaccine_type) %>%
+  mutate(period = gsub("Pre.Vacc","Reference", period)) %>%
+  mutate(period = gsub("Clearance","Pre-risk", period))
 
 } else if (dataset == 'new'){
   
   scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both.rds') %>%
     dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
     select(period, interval, event, vaccine_type) %>%
-    mutate(period = gsub("Pre.Vacc","Reference", period),
-           period = gsub("Clearance","Pre-risk", period))
+    mutate(period = gsub("Pre.Vacc","Reference", period)) %>%
+    mutate(period = gsub("Clearance","Pre-risk", period))
 
 # Values here are taken from data/pooled_analyses/CVST_requirements_England.docx  
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
@@ -96,7 +96,10 @@ scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds') %>%
   
   scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both_exclude_deaths.rds') %>%
     dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
-    select(period, interval, event, vaccine_type)
+    select(period, interval, event, vaccine_type) %>%
+    mutate(period = gsub("Pre.Vacc","Reference", period)) %>%
+    mutate(period = gsub("Clearance","Pre-risk", period))
+
   
   # English data is the same - there are no deaths in the 90 days period following event
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
@@ -113,7 +116,10 @@ scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds') %>%
   
   scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_hosp.rds') %>%
     dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
-    select(period, interval, event, vaccine_type)
+    select(period, interval, event, vaccine_type) %>%
+    mutate(period = gsub("Pre.Vacc","Reference", period)) %>%
+    mutate(period = gsub("Clearance","Pre-risk", period))
+  
   
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                      vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
@@ -167,9 +173,9 @@ sccs_PB <- clogit(event ~ period + strata(ID) + offset(log(interval)),data=df, s
 
 
 
-sccs_results <- data.frame( period= c('AZ', 'Reference', 'Pre-risk', 'Risk', 'PB', 'Reference', 'Pre-risk','Risk'),
-                            'Number of events' = c( '', event_count_n[1:3], '', event_count_n[4:6] ),
-                            IRR = c('', 1,  round(exp(sccs_AZ$coef), 2), '', 1, round(exp(sccs_PB$coef), 2)), 
+sccs_results <- data.frame( vaccine_type = rep( c('AZ', 'PB'), each = 3),
+                            period= rep( c('Reference', 'Pre-risk', 'Risk'), 2),
+                            IRR = c(1,  round(exp(sccs_AZ$coef), 2), 1, round(exp(sccs_PB$coef), 2)), 
                             `CI` = '', stringsAsFactors = FALSE, check.names = FALSE)
 
 lower <- sprintf('%.2f', exp( c( confint(sccs_AZ)[,1], confint(sccs_PB)[,1] )))
@@ -177,9 +183,12 @@ upper <- sprintf('%.2f', exp( c( confint(sccs_AZ)[,2], confint(sccs_PB)[,2] )))
 
 CI <- paste0('[', lower, '-', upper, ']'     )
 
-sccs_results[c(3,4,7,8), 'CI'] <- CI
+sccs_results[c(2,3,5,6), 'CI'] <- CI
 
 names(sccs_results)[4] <- '95% CI'
+
+sccs_results <- left_join(sccs_results, event_count) %>%
+                replace_na(list(n=0))
 
 write.csv(sccs_results, paste0('./output/pooled_analysis/sccs_cvst_', dataset, '.csv'), row.names = FALSE)
 
