@@ -51,7 +51,7 @@ rehydrate <- function(df){
 
 ######################## LOAD DATA ############################
 
-dataset = 'hosp_only'
+dataset = 'new'
 
 if (dataset == 'old'){
 # Old date with ~April 14th 2021 end date
@@ -76,7 +76,9 @@ scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds') %>%
   
   scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both.rds') %>%
     dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
-    select(period, interval, event, vaccine_type)
+    select(period, interval, event, vaccine_type) %>%
+    mutate(period = gsub("Pre.Vacc","Reference", period),
+           period = gsub("Clearance","Pre-risk", period))
 
 # Values here are taken from data/pooled_analyses/CVST_requirements_England.docx  
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
