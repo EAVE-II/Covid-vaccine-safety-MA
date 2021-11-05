@@ -16,7 +16,7 @@ library(finalfit)
 library(survival)
 
 # Set working directory on PHS for SRK
-setwd('/conf/EAVE/GPanalysis/progs/SRK/Covid-vaccine-safety-MA')
+setwd("/conf/EAVE/GPanalysis/analyses/Covid-vaccine-safety-MA")
 
 ###################### FUNCTIONS ##################################
 
@@ -51,7 +51,7 @@ rehydrate <- function(df){
 
 ######################## LOAD DATA ############################
 
-dataset = 'old'
+dataset = 'hosp_only'
 
 if (dataset == 'old'){
 # Old date with ~April 14th 2021 end date
@@ -66,31 +66,35 @@ eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                      N =c(3,1,9,4,0,0))
 
 
-scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds')
-
-scot <- dplyr::rename(scot, period = expgr, vaccine_type = Vacc.Type) %>%
-        select(period, interval, event, vaccine_type)
-
-scot <- mutate(scot, period = gsub("Pre.Vacc","Reference", period),
+scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst.rds') %>%
+        dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
+        select(period, interval, event, vaccine_type) %>%
+        mutate(period = gsub("Pre.Vacc","Reference", period),
                      period = gsub("Clearance","Pre-risk", period))
 
 } else if (dataset == 'new'){
   
-  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both.rds')
+  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both.rds') %>%
+    dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
+    select(period, interval, event, vaccine_type)
 
 # Values here are taken from data/pooled_analyses/CVST_requirements_England.docx  
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                      vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
                      N =c(13,5,9,14,3,1))
   
-# Values here are taken from data/pooled_analyses/wales_updated/sccs.analysis.html  
+# Values here are taken from data/pooled_analyses/wales_updated_2/sccs.analysisV2.html  
   wales <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                        vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
-                       N =c(12,2,4,2,1,1))
+                       N =c(12,2,4,3,1,1))
+  
+  
   
 } else if (dataset == 'exclude_deaths'){
   
-  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both_exclude_deaths.rds')
+  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_both_exclude_deaths.rds') %>%
+    dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
+    select(period, interval, event, vaccine_type)
   
   # English data is the same - there are no deaths in the 90 days period following event
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
@@ -100,15 +104,22 @@ scot <- mutate(scot, period = gsub("Pre.Vacc","Reference", period),
   # Welsh data is the same - there are no deaths in the 90 days period following event  
   wales <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                        vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
-                       N =c(12,2,4,2,1,1))
+                       N =c(12,2,4,3,1,1))
+  
   
 } else if (dataset == 'hosp_only'){
   
-  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_hosp.rds')
+  scot <- readRDS('./data/pooled_analyses/scot_sccs_data_cvst_hosp.rds') %>%
+    dplyr::rename(period = expgr, vaccine_type = Vacc.Type) %>%
+    select(period, interval, event, vaccine_type)
   
   eng <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
                      vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
                      N =c(0,0,1,0,0,0))
+  
+  wales <- data.frame( 'period' = rep( c('Reference', 'Pre-risk', 'Risk'), 2),
+                       vaccine_type = c( rep('AZ', 3), rep('PB', 3)),
+                       N =c(1,2,0,0,0,0))
 
 }
 
@@ -136,6 +147,8 @@ df <- group_by(df, ID) %>% filter( sum(event) == 1)
 df <- mutate(df, ind = case_when( period == 'Risk' ~ 28,
                                   period == 'Reference' ~ 90,
                                   period == 'Pre-risk' ~ 14))
+
+
 
 event_count <- group_by(df, vaccine_type, period) %>% filter(event == 1) %>% tally
 
